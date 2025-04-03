@@ -143,12 +143,13 @@ def handle_button_click(call):
                     data.loc[i, "score"] = str(int(data.loc[i, "score"]) + 1)
         else:        
             #  bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
-            bot.answer_callback_query(call.id, "پاسخ شما نادرست بود -1 امتیاز")
+            bot.answer_callback_query(call.id, f"پاسخ شما نادرست بود -1 امتیاز! گزینه درست گزینه {quizzes[quiz_id][0]} بود")
             for i in range(len(data["ID"])):
                 if (str(data["ID"][i]) == str(call.from_user.id)):
                     data.loc[i, "score"] = str(int(data.loc[i, "score"]) - 1)
         quizzes[quiz_id][1] = False
         data.to_excel("Data.xlsx", index=False, engine="openpyxl")
+        
     else:
         bot.answer_callback_query(call.id, "به این سوال قبلا پاسخ داده شده")
     # bot.edit_message_text("پاسخ", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
