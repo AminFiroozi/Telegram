@@ -4,7 +4,7 @@ import telebot
 from datetime import datetime
 import requests
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+import pandas as pd
 
 bot = telebot.TeleBot("7768159362:AAET-ow1Q6YLT9D2EYH5C4Sv6Cjx70ligL8")
 
@@ -67,7 +67,12 @@ def getId():
 
 @bot.message_handler(commands=['quiz'], chat_types = ["group", "supergroup", "private"])
 def quiz(message):
+    print(message)
     # quiz_id = getId()
+    data = pd.read_excel("Data.xlsx", engine="openpyxl")
+    new_record = {"ID": str(message.from_user.id), "score": "0"}
+    data = data.append(new_record, ignore_index=True)
+    data.to_excel("Data.xlsx", index=False, engine="openpyxl")
     sent_msg = bot.reply_to(message, "در حال آماده سازی کوییز...")
     quiz_id = f"{message.chat.id},{sent_msg.message_id}"
     keyboard = InlineKeyboardMarkup()
@@ -108,15 +113,27 @@ A:<گزینه درست>""")
     # bot.edit_message_text(tokens[1], parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
     
 @bot.callback_query_handler(func=lambda call: call.data)
-def handle_button_click(call, ):
+def handle_button_click(call):
+    
+    # print(call)
     quiz_id = call.data.split(":")[0]
     print(call.data, quizzes[quiz_id])
+    
+    data = pd.read_excel("Data.xlsx", engine="openpyxl")
     if int(quizzes[quiz_id]) == int(call.data.split(":")[-1]):
         #  bot.edit_message_text("پاسخ شما درست بود +1 امتیاز!", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
         bot.answer_callback_query(call.id, "پاسخ شما درست بود +1 امتیاز!") 
+        for i in range(len(data["ID"])):
+            if (str(data["ID"][i]) == str(call.from_user.id)):
+                data.loc[i, "score"] = str(int(data.loc[i, "score"]) + 1)
     else:        
         #  bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
         bot.send_message(call.message.chat.id, "پاسخ شما نادرست بود -1 امتیاز")
+        for i in range(len(data["ID"])):
+            if (str(data["ID"][i]) == str(call.from_user.id)):
+                data.loc[i, "score"] = str(int(data.loc[i, "score"]) - 1)
+                
+    data.to_excel("Data.xlsx", index=False, engine="openpyxl")
     # bot.edit_message_text("پاسخ", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
     
 
