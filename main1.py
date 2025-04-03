@@ -65,6 +65,14 @@ def getId():
         return getId()
     return r
 
+
+@bot.message_handler(chat_types = ["group", "supergroup", "private"])
+def getscore(message):
+    data = pd.read_excel("Data.xlsx", engine="openpyxl")
+    for i in range(len(data["ID"])):
+        if (str(data["ID"][i]) == str(message.from_user.id)):
+            bot.reply_to(message, f"امتیاز شما {data["score"][i]} است")
+
 @bot.message_handler(commands=['quiz'], chat_types = ["group", "supergroup", "private"])
 def quiz(message):
     print(message)
