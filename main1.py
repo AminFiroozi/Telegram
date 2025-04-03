@@ -38,7 +38,7 @@ def optifine(name):
     return "".join(Name)
 def getChat(command):
     API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
-    headers = {"Authorization": "Bearer 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"}
+    headers = {"Authorization": f"Bearer "}
     payload = {
         "messages": [
             {
