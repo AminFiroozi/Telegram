@@ -2,13 +2,16 @@ import os
 import random
 import telebot
 from datetime import datetime
+import requests
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-bot = telebot.TeleBot("7264008522:AAGjqjomSdDUA04W6X_gFBIDBsfc5m1Qvzs")
+
+bot = telebot.TeleBot("7768159362:AAET-ow1Q6YLT9D2EYH5C4Sv6Cjx70ligL8")
 
 cats = 252
 memes = 11000
 samoors = 24
-
+quizzes = {}
 def optifineTime(time):
     # 2023-07-10 11:38:34
     Year = int(time[:4])
@@ -33,6 +36,88 @@ def optifine(name):
         if Name[i] in ["*", "." ,"\"", "/", "\\", "[" , "]" , ":" , ";" , "|", ","]:
             Name.remove(Name[i])
     return "".join(Name)
+def getChat(command):
+    API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
+    headers = {"Authorization": "Bearer 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"}
+    payload = {
+        "messages": [
+            {
+                "role": "user",
+                "content": command
+            }
+        ],
+        "model": "deepseek/deepseek-v3-0324",
+    }
+
+    response = requests.post(API_URL, headers=headers, json=payload)
+    print(response.json()["choices"][0]["message"]["content"])
+    return response.json()["choices"][0]["message"]["content"]
+
+# @bot.message_handler(func=lambda message: message.text)
+# def r(message):
+#     print(message)
+#     # bot.reply_to(message, message)
+
+def getId():
+    r = random.randint(1, 10000)
+    if r in quizzes.keys():
+        return getId()
+    return r
+
+@bot.message_handler(commands=['quiz'], chat_types = ["group", "supergroup", "private"])
+def quiz(message):
+    # quiz_id = getId()
+    sent_msg = bot.reply_to(message, "در حال آماده سازی کوییز...")
+    quiz_id = f"{message.chat.id},{sent_msg.message_id}"
+    keyboard = InlineKeyboardMarkup()
+    context = ' '.join(message.text.split()[2:])
+    try:
+        level = int(message.text.split()[1])
+    except:
+        level = 5
+        context = message.text.split()[1] + context
+        
+    res = getChat(f"""یک کوییز یک سوالی و 4 جوابی از مبحث {context}و با سطح سختی {level}  از 10 طراحی کن و فرمت سوالات و پاسخ را به شکل زیر ارسال کن مطلقا بدون هیچ توضیحات اضافه ای و در جاهایی مشخص شده قرار بده همچنین هیچ متی را Bold نکن یا هیچ استایلی روی ان قرار نده
+فرمت مد نظر:
+صورت سوال:
+<صورت سوال>
+1.<گزینه اول>
+2.<گزینه دوم>
+3.<گزینه سوم>
+4.<گزینه چهارم>
+A:<گزینه درست>""")
+    tokens = res.split('\n')
+    # for i in range(2, len(tokens) - 1):
+    #     # button = keyboard.row(InlineKeyboardButton(tokens[i], callback_data=f"{i}"))
+    #     try:
+    #        button = InlineKeyboardButton(tokens[i].split(".")[1], callback_data=f"{quiz_id}:{i - 2}")
+    #     #    button = InlineKeyboardButton(f"گزینه {i - 2}", callback_data=f"{quiz_id}:{i - 2}")
+    #        keyboard.add(button)
+    #     except:
+    #         pass
+    
+    for i in range(1, 5):
+        button = InlineKeyboardButton(f"گزینه {i}", callback_data=f"{quiz_id}:{i}")
+        keyboard.add(button)
+
+    quizzes[quiz_id] = tokens[-1].split(":")[-1]
+    print(tokens)
+    # bot.reply_to(message.chat.id, tokens[0], reply_markup=keyboard)
+    bot.edit_message_text('\n'.join(tokens[1:-1]), parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
+    # bot.edit_message_text(tokens[1], parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
+    
+@bot.callback_query_handler(func=lambda call: call.data)
+def handle_button_click(call, ):
+    quiz_id = call.data.split(":")[0]
+    print(call.data, quizzes[quiz_id])
+    if int(quizzes[quiz_id]) == int(call.data.split(":")[-1]):
+         bot.edit_message_text("پاسخ شما درست بود +1 امتیاز!", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
+        # bot.answer_callback_query(call.id, "پاسخ شما درست بود +1 امتیاز!") 
+    else:        
+         bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
+        # bot.send_message(call.message.chat.id, "پاسخ شما نادرست بود -1 امتیاز")
+    # bot.edit_message_text("پاسخ", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
+    
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
@@ -79,6 +164,9 @@ def echo_all(message):
         bot.copy_message(from_chat_id="-1001767243691", chat_id=500161862, message_id=Picid)
         bot.send_message(500161862, f"https://t.me/c/1767243691/{Picid} Sent to {Name}")
         bot.send_message(500161862, f"dang {Name}")
+    elif message.text.lower().startswith("chat"):
+        sent_msg = bot.reply_to(message, "در حال پردازش...")
+        bot.edit_message_text(getChat(' '.join(message.text.split()[1:])), parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id)
     else:
         bot.reply_to(message, "Don't say bullshit")
 
@@ -114,7 +202,7 @@ def video(message):
         new_file.write(downloaded_file)
     with open(file_info.file_path, "wb") as new_file:
         new_file.write(downloaded_file)
-
+    
 @bot.message_handler(chat_types = ["group", "supergroup"])
 def read(message):
     if message.text  in ["میو", "meow", "Meow", "معو", "موی"]:
@@ -167,8 +255,10 @@ def read(message):
         bot.reply_to(message, "خوشمزه")
     elif message.text.lower() == "gg":
         bot.reply_to(message, "ez")
+    elif message.text.lower().startswith("chat"):
+        sent_msg = bot.reply_to(message, "در حال پردازش...")
+        bot.edit_message_text("m", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id)
+        # bot.reply_to(message,  getChat(' '.join(message.text.split()[1:])), parse_mode='Markdown')
     # bot.forward_message("500161862", message.chat.id, message.message_id)
-
-
 
 bot.infinity_polling()
