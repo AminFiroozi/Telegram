@@ -38,7 +38,7 @@ def optifine(name):
     return "".join(Name)
 def getChat(command):
     API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
-    headers = {"Authorization": "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"}
+    headers = {"Authorization": "Bearer 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"}
     payload = {
         "messages": [
             {
@@ -50,6 +50,7 @@ def getChat(command):
     }
 
     response = requests.post(API_URL, headers=headers, json=payload)
+    print(response)
     print(response.json()["choices"][0]["message"]["content"])
     return response.json()["choices"][0]["message"]["content"]
 
@@ -257,7 +258,7 @@ def read(message):
         bot.reply_to(message, "ez")
     elif message.text.lower().startswith("chat"):
         sent_msg = bot.reply_to(message, "در حال پردازش...")
-        bot.edit_message_text("m", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id)
+        bot.edit_message_text(getChat(' '.join(message.text.split()[1:])), parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id)
         # bot.reply_to(message,  getChat(' '.join(message.text.split()[1:])), parse_mode='Markdown')
     # bot.forward_message("500161862", message.chat.id, message.message_id)
 
