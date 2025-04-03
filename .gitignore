@@ -1,4 +1,4 @@
 *
 !*.py
-!Data.xlsx
+Data.xlsx
 *.env*
