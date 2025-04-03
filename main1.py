@@ -12,6 +12,7 @@ cats = 252
 memes = 11000
 samoors = 24
 quizzes = {}
+
 def optifineTime(time):
     # 2023-07-10 11:38:34
     Year = int(time[:4])
@@ -118,7 +119,7 @@ A:<گزینه درست>""")
         button = InlineKeyboardButton(f"گزینه {i}", callback_data=f"{quiz_id}:{i}")
         keyboard.add(button)
 
-    quizzes[quiz_id] = tokens[-1].split(":")[-1]
+    quizzes[quiz_id] = [tokens[-1].split(":")[-1], False]
     print(tokens)
     # bot.reply_to(message.chat.id, tokens[0], reply_markup=keyboard)
     bot.edit_message_text('\n'.join(tokens[1:-1]), parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
@@ -129,23 +130,25 @@ def handle_button_click(call):
     
     # print(call)
     quiz_id = call.data.split(":")[0]
-    print(call.data, quizzes[quiz_id])
-    
-    data = pd.read_excel("Data.xlsx", engine="openpyxl")
-    if int(quizzes[quiz_id]) == int(call.data.split(":")[-1]):
-        #  bot.edit_message_text("پاسخ شما درست بود +1 امتیاز!", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
-        bot.answer_callback_query(call.id, "پاسخ شما درست بود +1 امتیاز!") 
-        for i in range(len(data["ID"])):
-            if (str(data["ID"][i]) == str(call.from_user.id)):
-                data.loc[i, "score"] = str(int(data.loc[i, "score"]) + 1)
-    else:        
-        #  bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
-        bot.send_message(call.message.chat.id, "پاسخ شما نادرست بود -1 امتیاز")
-        for i in range(len(data["ID"])):
-            if (str(data["ID"][i]) == str(call.from_user.id)):
-                data.loc[i, "score"] = str(int(data.loc[i, "score"]) - 1)
-                
-    data.to_excel("Data.xlsx", index=False, engine="openpyxl")
+    # print(call.data, quizzes[quiz_id])
+    if quizzes[quiz_id][1]:
+        data = pd.read_excel("Data.xlsx", engine="openpyxl")
+        if int(quizzes[quiz_id][0]) == int(call.data.split(":")[-1]):
+            #  bot.edit_message_text("پاسخ شما درست بود +1 امتیاز!", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
+            bot.answer_callback_query(call.id, "پاسخ شما درست بود +1 امتیاز!") 
+            for i in range(len(data["ID"])):
+                if (str(data["ID"][i]) == str(call.from_user.id)):
+                    data.loc[i, "score"] = str(int(data.loc[i, "score"]) + 1)
+        else:        
+            #  bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
+            bot.answer_callback_query(call.id, "پاسخ شما نادرست بود -1 امتیاز")
+            for i in range(len(data["ID"])):
+                if (str(data["ID"][i]) == str(call.from_user.id)):
+                    data.loc[i, "score"] = str(int(data.loc[i, "score"]) - 1)
+                    
+        data.to_excel("Data.xlsx", index=False, engine="openpyxl")
+    else:
+        bot.answer_callback_query(call.id, "به این سوال قبلا پاسخ داده شده")
     # bot.edit_message_text("پاسخ", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
     
 
