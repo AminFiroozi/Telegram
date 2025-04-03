@@ -83,8 +83,9 @@ def quiz(message):
         if (str(data["ID"][i]) == str(message.from_user.id)):
             found = True
     if not found:
-        new_record = {"ID": str(message.from_user.id), "score": "0"}
-        data = data.append(new_record, ignore_index=True)
+        new_record = {"ID": [str(message.from_user.id)], "score": ["0"]}
+        # data = data.append(new_record, ignore_index=True)
+        data = pd.concat([data, pd.DataFrame(new_record)], axis=0, ignore_index=True)
         data.to_excel("Data.xlsx", index=False, engine="openpyxl")
         
     sent_msg = bot.reply_to(message, "در حال آماده سازی کوییز...")
