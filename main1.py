@@ -78,6 +78,7 @@ def getscore(message):
 def quiz(message):
     # print(message)
     data = pd.read_excel("Data.xlsx", engine="openpyxl")
+    found = False
     for i in range(len(data["ID"])):
         if (str(data["ID"][i]) == str(message.from_user.id)):
             found = True
