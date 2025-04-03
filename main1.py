@@ -120,7 +120,7 @@ A:<گزینه درست>""")
         button = InlineKeyboardButton(f"گزینه {i}", callback_data=f"{quiz_id}:{i}")
         keyboard.add(button)
 
-    quizzes[quiz_id] = [tokens[-1].split(":")[-1], False]
+    quizzes[quiz_id] = [tokens[-1].split(":")[-1], True]
     print(tokens)
     # bot.reply_to(message.chat.id, tokens[0], reply_markup=keyboard)
     bot.edit_message_text('\n'.join(tokens[1:-1]), parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
@@ -146,7 +146,7 @@ def handle_button_click(call):
             for i in range(len(data["ID"])):
                 if (str(data["ID"][i]) == str(call.from_user.id)):
                     data.loc[i, "score"] = str(int(data.loc[i, "score"]) - 1)
-                    
+        quizzes[quiz_id][1] = False
         data.to_excel("Data.xlsx", index=False, engine="openpyxl")
     else:
         bot.answer_callback_query(call.id, "به این سوال قبلا پاسخ داده شده")
