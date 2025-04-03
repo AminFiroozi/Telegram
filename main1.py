@@ -112,11 +112,11 @@ def handle_button_click(call, ):
     quiz_id = call.data.split(":")[0]
     print(call.data, quizzes[quiz_id])
     if int(quizzes[quiz_id]) == int(call.data.split(":")[-1]):
-         bot.edit_message_text("پاسخ شما درست بود +1 امتیاز!", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
-        # bot.answer_callback_query(call.id, "پاسخ شما درست بود +1 امتیاز!") 
+        #  bot.edit_message_text("پاسخ شما درست بود +1 امتیاز!", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
+        bot.answer_callback_query(call.id, "پاسخ شما درست بود +1 امتیاز!") 
     else:        
-         bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
-        # bot.send_message(call.message.chat.id, "پاسخ شما نادرست بود -1 امتیاز")
+        #  bot.edit_message_text("پاسخ شما نادرست بود -1 امتیاز", chat_id=quiz_id.split(",")[0], message_id=quiz_id.split(",")[1])
+        bot.send_message(call.message.chat.id, "پاسخ شما نادرست بود -1 امتیاز")
     # bot.edit_message_text("پاسخ", parse_mode='Markdown', chat_id=message.chat.id, message_id=sent_msg.message_id, reply_markup=keyboard)
     
 
