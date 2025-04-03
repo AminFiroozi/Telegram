@@ -66,7 +66,7 @@ def getId():
     return r
 
 
-@bot.message_handler(chat_types = ["group", "supergroup", "private"])
+@bot.message_handler(commands=['myscore'], chat_types = ["group", "supergroup", "private"])
 def getscore(message):
     data = pd.read_excel("Data.xlsx", engine="openpyxl")
     for i in range(len(data["ID"])):
@@ -75,12 +75,16 @@ def getscore(message):
 
 @bot.message_handler(commands=['quiz'], chat_types = ["group", "supergroup", "private"])
 def quiz(message):
-    print(message)
-    # quiz_id = getId()
+    # print(message)
     data = pd.read_excel("Data.xlsx", engine="openpyxl")
-    new_record = {"ID": str(message.from_user.id), "score": "0"}
-    data = data.append(new_record, ignore_index=True)
-    data.to_excel("Data.xlsx", index=False, engine="openpyxl")
+    for i in range(len(data["ID"])):
+        if (str(data["ID"][i]) == str(message.from_user.id)):
+            found = True
+    if not found:
+        new_record = {"ID": str(message.from_user.id), "score": "0"}
+        data = data.append(new_record, ignore_index=True)
+        data.to_excel("Data.xlsx", index=False, engine="openpyxl")
+        
     sent_msg = bot.reply_to(message, "در حال آماده سازی کوییز...")
     quiz_id = f"{message.chat.id},{sent_msg.message_id}"
     keyboard = InlineKeyboardMarkup()
